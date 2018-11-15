@@ -61,7 +61,7 @@ def generate_short_url(mongo_host, mongo_port, mongo_user, mongo_password, db_na
 
 # MONGO CONNECTIONS
 def connect_to_mongo(mongo_host, mongo_port, mongo_user, mongo_password):
-    uri = f"mongodb+srv:/{mongo_host}"
+    uri = f"mongodb+srv://{mongo_host}"
     print(uri)
     return MongoClient(uri, username=mongo_user, password=mongo_password)
 
