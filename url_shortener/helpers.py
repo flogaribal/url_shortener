@@ -3,7 +3,6 @@ from .config import *
 import datetime
 from .constants import *
 import random
-from urllib.parse import quote_plus
 
 
 class URLEntry:
@@ -43,27 +42,25 @@ def url_entry_from_db_entry(db_entry):
                     db_entry['expiry_date'], db_entry['dates_clicked'], db_entry['_id'])
 
 
-def create_url_entry(url, name, expiry_date, mongo_host, mongo_port, mongo_user, mongo_password, db_name,
+def create_url_entry(url, name, expiry_date, mongo_uri, mongo_user, mongo_password, db_name,
                      collection_name, short_url_length, short_url_possible_characters):
-    return URLEntry(url, name, generate_short_url(mongo_host, mongo_port, mongo_user, mongo_password, db_name,
+    return URLEntry(url, name, generate_short_url(mongo_uri, mongo_user, mongo_password, db_name,
                                                   collection_name, short_url_length, short_url_possible_characters),
                     datetime.datetime.utcnow(), expiry_date)
 
 
-def generate_short_url(mongo_host, mongo_port, mongo_user, mongo_password, db_name, collection_name,
+def generate_short_url(mongo_uri, mongo_user, mongo_password, db_name, collection_name,
                        short_url_possible_characters, short_url_length):
     short_url = generate_random_string(short_url_length, short_url_possible_characters)
-    while db_url_entry_exists(short_url, mongo_host, mongo_port, mongo_user, mongo_password, db_name, collection_name):
+    while db_url_entry_exists(short_url, mongo_uri, mongo_user, mongo_password, db_name, collection_name):
         short_url = generate_random_string(short_url_length, short_url_possible_characters)
 
     return short_url
 
 
 # MONGO CONNECTIONS
-def connect_to_mongo(mongo_host, mongo_port, mongo_user, mongo_password):
-    uri = f"mongodb+srv://{mongo_host}"
-    print(uri)
-    return MongoClient(uri, username=mongo_user, password=mongo_password)
+def connect_to_mongo(mongo_uri, mongo_user, mongo_password):
+    return MongoClient(mongo_uri, username=mongo_user, password=mongo_password)
 
 
 def get_db(client, db_name):
@@ -74,14 +71,14 @@ def get_collection(db, collection_name):
     return db[collection_name]
 
 
-def connect_and_get_collection(mongo_host, mongo_port, mongo_user, mongo_password, db_name, collection_name):
-    return get_collection(get_db(connect_to_mongo(mongo_host, mongo_port, mongo_user, mongo_password), db_name),
+def connect_and_get_collection(mongo_uri, mongo_user, mongo_password, db_name, collection_name):
+    return get_collection(get_db(connect_to_mongo(mongo_uri, mongo_user, mongo_password), db_name),
                           collection_name)
 
 
 # MONGO HANDLING
-def insert_db_url_entry(url_entry, mongo_host, mongo_port, mongo_user, mongo_password, db_name, collection_name):
-    collection = connect_and_get_collection(mongo_host, mongo_port, mongo_user, mongo_password, db_name,
+def insert_db_url_entry(url_entry, mongo_uri, mongo_user, mongo_password, db_name, collection_name):
+    collection = connect_and_get_collection(mongo_uri, mongo_user, mongo_password, db_name,
                                             collection_name)
     DEBUG and print(f"Inserting {url_entry}")
     url_entry_dict = url_entry.to_mongo()
@@ -91,8 +88,8 @@ def insert_db_url_entry(url_entry, mongo_host, mongo_port, mongo_user, mongo_pas
     return url_entry_from_db_entry(collection.find_one({'_id': db_url_entry_id})).to_dict()
 
 
-def db_url_entry_exists(short_url, mongo_host, mongo_port, mongo_user, mongo_password, db_name, collection_name):
-    collection = connect_and_get_collection(mongo_host, mongo_port, mongo_user, mongo_password, db_name,
+def db_url_entry_exists(short_url, mongo_uri, mongo_user, mongo_password, db_name, collection_name):
+    collection = connect_and_get_collection(mongo_uri, mongo_user, mongo_password, db_name,
                                             collection_name)
     cursor = collection.find({"short_url": short_url})
     return cursor.count() > 0
