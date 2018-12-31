@@ -48,3 +48,7 @@ class UrlShortener:
             return collection.delete_one({'short_url': short_url})
         else:
             return None
+
+    def get_all_categories(self):
+        db = get_db(self.mongo_client, self.db_name)
+        return db.list_collection_names()
