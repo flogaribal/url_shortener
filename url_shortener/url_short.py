@@ -12,9 +12,9 @@ class UrlShortener:
         self.short_url_possible_characters = short_url_possible_characters
         self.short_url_length = short_url_length
 
-    def generate_and_insert_short_url(self, url, name, expiry_date=None):
-        url_entry = create_url_entry(url, name, expiry_date, self.mongo_client, self.db_name, self.collection_name,
-                                     self.short_url_possible_characters, self.short_url_length)
+    def generate_and_insert_short_url(self, url, name, expiry_date=None, extra_info=None):
+        url_entry = create_url_entry(url, name, expiry_date, extra_info, self.mongo_client, self.db_name,
+                                     self.collection_name, self.short_url_possible_characters, self.short_url_length)
         return insert_db_url_entry(url_entry, self.mongo_client, self.db_name, self.collection_name)
 
     def get_db_url_entry(self, short_url):
