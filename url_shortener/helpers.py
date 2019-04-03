@@ -6,7 +6,7 @@ import random
 
 class URLEntry:
 
-    def __init__(self, url, name, short_url, date_created, expiry_date=None, dates_clicked=None, _id=None):
+    def __init__(self, url, name, short_url, date_created, expiry_date=None, dates_clicked=None, _id=None, extra_info=None):
         if dates_clicked is None:
             dates_clicked = []
         self._id = _id
@@ -16,36 +16,58 @@ class URLEntry:
         self.expiry_date = expiry_date
         self.date_created = date_created
         self.dates_clicked = dates_clicked
-    
+        self.extra_info = extra_info
+
     def to_dict(self):
-        return {"_id": str(self._id), "url": self.url, "name": self.name, "short_url": self.short_url,
-                "date_created": self.date_created.isoformat(), "expiry_date":
-                    self.expiry_date.isoformat() if self.expiry_date is not None else None,
-                "dates_clicked": [date_clicked.isoformat() for date_clicked in self.dates_clicked]}
+        return {
+            "_id":              str(self._id),
+            "url":              self.url,
+            "name":             self.name,
+            "short_url":        self.short_url,
+            "date_created":     self.date_created.isoformat(),
+            "expiry_date":      self.expiry_date.isoformat() if self.expiry_date is not None else None,
+            "dates_clicked":    [date_clicked.isoformat() for date_clicked in self.dates_clicked],
+            "extra_info":       self.extra_info
+        }
 
     def to_mongo(self):
-        return {"_id": str(self._id), "url": self.url, "name": self.name, "short_url": self.short_url,
-                "date_created": self.date_created, "expiry_date": self.expiry_date,
-                "dates_clicked": [date_clicked for date_clicked in self.dates_clicked]}
+        return {
+            "_id":              str(self._id),
+            "url":              self.url,
+            "name":             self.name,
+            "short_url":        self.short_url,
+            "date_created":     self.date_created,
+            "expiry_date":      self.expiry_date,
+            "dates_clicked":    [date_clicked for date_clicked in self.dates_clicked],
+            "extra_info":       self.extra_info
+        }
     
     def __str__(self):
         return f"{{_id: {self._id}, url: {self.url}, name:{self.name}, short_url: {self.short_url}, " \
                f"date_created: {self.date_created}, expiry_date: {self.expiry_date}," \
-               f"dates_clicked: {self.dates_clicked}}}"
+               f"dates_clicked: {self.dates_clicked}," \
+               f"extra_info: {str(self.extra_info)}}}"
 
 
 # URLEntry HANDLING
 def url_entry_from_db_entry(db_entry):
-    print(db_entry)
-    return URLEntry(db_entry['url'], db_entry['name'], db_entry['short_url'], db_entry['date_created'],
-                    db_entry['expiry_date'], db_entry['dates_clicked'], db_entry['_id'])
+    DEBUG and print(db_entry)
+    return URLEntry(
+        db_entry['url'],
+        db_entry['name'],
+        db_entry['short_url'],
+        db_entry['date_created'],
+        db_entry['expiry_date'],
+        db_entry['dates_clicked'],
+        db_entry['_id'],
+        db_entry['extra_info'])
 
 
-def create_url_entry(url, name, expiry_date, mongo_client, db_name,
+def create_url_entry(url, name, expiry_date, extra_info, mongo_client, db_name,
                      collection_name, short_url_length, short_url_possible_characters):
     return URLEntry(url, name, generate_short_url(mongo_client, db_name, collection_name, short_url_length,
                                                   short_url_possible_characters), datetime.datetime.utcnow(),
-                    expiry_date)
+                    expiry_date, extra_info=extra_info)
 
 
 def generate_short_url(mongo_client, db_name, collection_name,
