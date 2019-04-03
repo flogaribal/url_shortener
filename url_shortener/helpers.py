@@ -52,6 +52,9 @@ class URLEntry:
 # URLEntry HANDLING
 def url_entry_from_db_entry(db_entry):
     DEBUG and print(db_entry)
+    extra_info = None
+    if 'extra_info' in db_entry:
+        extra_info = db_entry['extra_info']
     return URLEntry(
         db_entry['url'],
         db_entry['name'],
@@ -60,7 +63,7 @@ def url_entry_from_db_entry(db_entry):
         db_entry['expiry_date'],
         db_entry['dates_clicked'],
         db_entry['_id'],
-        db_entry['extra_info'])
+        extra_info)
 
 
 def create_url_entry(url, name, expiry_date, extra_info, mongo_client, db_name,
